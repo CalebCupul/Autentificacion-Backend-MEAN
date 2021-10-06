@@ -1,6 +1,8 @@
 const { response } = require('express');
 const { db } = require('../models/Usuario');
 const Usuario = require('../models/Usuario');
+const bcrypt = require('bcryptjs');
+const { generarJWT } = require('../helpers/jwt');
 
 const crearUsuario = async(req, res = response) => {
 
@@ -24,11 +26,13 @@ const crearUsuario = async(req, res = response) => {
 
 
         // Hash de contrasena
-
+            // Salt consiste en generar numeros aleatorios para la validacion de la contrasena
+        const salt = bcrypt.genSaltSync();
+        dbUser.password =  bcrypt.hashSync( password, salt );
 
 
         // Generar JWT
-
+        const token = await generarJWT( dbUser.id, name );
 
         // Crear usuario de la BD
         await dbUser.save();
@@ -39,6 +43,7 @@ const crearUsuario = async(req, res = response) => {
             ok: true,
             uid: dbUser.id,
             name: name,
+            token
 
         });
 
